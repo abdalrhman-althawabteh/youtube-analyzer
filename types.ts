@@ -1,16 +1,16 @@
+// Refactored Onboarding Data for better personalization
 export interface OnboardingData {
-  mainProblem: string;
-  ideaSources: string[];
-  currentPostingFreq: string;
-  goalPostingFreq: string;
-  consistencyBlocker: string;
+  creatorLevel: 'Beginner' | 'Intermediate' | 'Pro'; // New: Experience level
+  passionNiche: string; // New: What do they love?
+  contentStyle: string; // New: Vlog, Educational, Gaming, etc.
+  
   weeklyHours: number;
-  primaryGoal: string;
-  goalTimeline: string;
-  biggestFrustration: string;
+  primaryGoal: string; // Keeping this but maybe reframing options
+  consistencyBlocker: string; // Keeping this
+  
   channelId: string;
   youtubeApiKey: string;
-  geminiApiKey: string; // Added Gemini API Key
+  geminiApiKey: string;
 }
 
 export interface Comment {

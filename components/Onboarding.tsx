@@ -1,42 +1,38 @@
 import React, { useState } from 'react';
 import { OnboardingData } from '../types';
-import { ArrowLeft, ArrowRight, Youtube, Target, Clock, AlertCircle, PlayCircle, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Youtube, Target, Sparkles, Heart, Rocket, Video } from 'lucide-react';
 
 interface Props {
   onComplete: (data: OnboardingData) => void;
 }
 
 const steps = [
-  { id: 1, title: 'التحديات', icon: <AlertCircle /> },
-  { id: 2, title: 'الأهداف', icon: <Target /> },
-  { id: 3, title: 'الربط', icon: <Youtube /> },
+  { id: 1, title: 'الشغف', icon: <Heart /> },
+  { id: 2, title: 'المستوى', icon: <Rocket /> },
+  { id: 3, title: 'الهدف', icon: <Target /> },
+  { id: 4, title: 'القدرات', icon: <Sparkles /> }, // New Step: "Connect" is now part of capabilities unleashing
 ];
 
 const Onboarding: React.FC<Props> = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<OnboardingData>>({
-    ideaSources: [],
     weeklyHours: 5,
-    // Pre-filling the key as requested by the user to fix the issue immediately
-    geminiApiKey: "AIzaSyDoWtwmCZmkNkGPlulBKUz0PVkYy0yGV3A", 
-    // Assuming the user might want to use the same key for YouTube if applicable, 
-    // or they can enter a different one. Leaving it blank or pre-filling if they use the same project.
-    youtubeApiKey: "" 
+    geminiApiKey: "",
+    youtubeApiKey: ""
   });
 
-  const handleNext = () => setStep(prev => Math.min(prev + 1, 3));
+  const handleNext = () => setStep(prev => Math.min(prev + 1, 4));
   const handleBack = () => setStep(prev => Math.max(prev - 1, 1));
 
   const updateField = (field: keyof OnboardingData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleSelection = (field: 'ideaSources', value: string) => {
-    const current = formData[field] || [];
-    const updated = current.includes(value) 
-      ? current.filter(item => item !== value)
-      : [...current, value];
-    updateField(field, updated);
+  const isStepValid = () => {
+    if (step === 1) return !!formData.passionNiche && !!formData.contentStyle;
+    if (step === 2) return !!formData.creatorLevel;
+    if (step === 3) return !!formData.primaryGoal && !!formData.weeklyHours;
+    return true;
   };
 
   const handleSubmit = () => {
@@ -45,231 +41,252 @@ const Onboarding: React.FC<Props> = ({ onComplete }) => {
     }
   };
 
-  const isStepValid = () => {
-    if (step === 1) return !!formData.mainProblem && !!formData.consistencyBlocker;
-    if (step === 2) return !!formData.weeklyHours && !!formData.primaryGoal;
-    return true;
-  };
-
   return (
-    <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
+    <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center p-4 font-sans" dir="rtl">
+      <div className="w-full max-w-3xl">
         {/* Progress Bar */}
-        <div className="flex justify-between mb-8 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-[#272727] -z-10 rounded-full"></div>
-          <div 
-            className="absolute top-1/2 right-0 h-1 bg-gradient-to-l from-[#FF0000] to-[#F39C12] -z-10 rounded-full transition-all duration-500"
-            style={{ width: `${((step - 1) / 2) * 100}%` }}
+        <div className="flex justify-between mb-8 relative px-10">
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-[#272727] -z-10 rounded-full mx-10"></div>
+          <div
+            className="absolute top-1/2 right-0 h-1 bg-gradient-to-l from-[#FF0000] to-[#F39C12] -z-10 rounded-full transition-all duration-500 mx-10"
+            style={{ width: `${((step - 1) / 3) * 100}%` }}
           ></div>
-          
+
           {steps.map((s) => (
-            <div key={s.id} className={`flex flex-col items-center gap-2 transition-colors duration-300 ${step >= s.id ? 'text-white' : 'text-gray-600'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 bg-[#0F0F0F] ${
-                step >= s.id ? 'border-[#FF0000] text-[#FF0000]' : 'border-[#272727] text-gray-600'
-              }`}>
-                {step > s.id ? <CheckCircle2 size={20} /> : s.icon}
+            <div key={s.id} className={`flex flex-col items-center gap-2 transition-all duration-300 ${step >= s.id ? 'scale-110' : 'opacity-50'}`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 bg-[#0F0F0F] transition-colors ${step >= s.id ? 'border-[#FF0000] text-[#FF0000] shadow-lg shadow-red-500/20' : 'border-[#272727] text-gray-500'
+                }`}>
+                {s.icon}
               </div>
-              <span className="text-xs font-bold">{s.title}</span>
+              <span className={`text-xs font-bold ${step >= s.id ? 'text-white' : 'text-gray-600'}`}>{s.title}</span>
             </div>
           ))}
         </div>
 
-        <div className="bg-[#1A1A1A] border border-white/5 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-           {/* Decorative Elements */}
-           <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#FF0000]/5 rounded-full blur-3xl pointer-events-none"></div>
-           <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#F39C12]/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="bg-[#1A1A1A] border border-white/5 p-8 rounded-3xl shadow-2xl relative overflow-hidden min-h-[500px] flex flex-col">
+          {/* Decorative Elements */}
+          <div className="absolute -top-32 -left-32 w-80 h-80 bg-[#FF0000]/5 rounded-full blur-[100px] pointer-events-none"></div>
+          <div className="absolute -bottom-32 -right-32 w-80 h-80 bg-[#F39C12]/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-          {/* Step 1: Challenges */}
-          {step === 1 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold mb-6 text-white">ما هي أكبر مشكلة تواجهك حالياً؟</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  "ما عندي أفكار محتوى كافية 💡",
-                  "المشاهدات قليلة 📉",
-                  "ما أقدر أنزل بانتظام ⏰",
-                  "ما أعرف كيف أطور القناة 📈"
-                ].map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => updateField('mainProblem', opt)}
-                    className={`p-4 rounded-xl border-2 text-right transition-all ${
-                      formData.mainProblem === opt 
-                      ? 'border-[#FF0000] bg-[#FF0000]/10 text-white' 
-                      : 'border-[#272727] hover:border-[#F39C12] text-gray-300'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
+          <div className="flex-grow">
+            {/* Step 1: Passion & Style - The Hook */}
+            {step === 1 && (
+              <div className="space-y-8 animate-fade-in">
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-bold text-white">إيش هو شغفك؟ 🔥</h2>
+                  <p className="text-gray-400">خلينا نعرف إيش النوع المحتوى اللي بتستمتع بصناعته عشان نساعدك تبدع فيه.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-300">عن إيش بتحب تحكي؟ (مجالك/النيش)</label>
+                  <input
+                    type="text"
+                    placeholder="مثلاً: جيمنج، طبخ، تعليم برمجة، قصص رعب..."
+                    className="w-full bg-[#0F0F0F] border border-[#272727] rounded-xl p-4 text-white focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] outline-none transition-all placeholder:text-gray-600"
+                    value={formData.passionNiche || ''}
+                    onChange={(e) => updateField('passionNiche', e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">إيش ستايل الفيديوهات اللي ببالك؟</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {['Vlogs & Lifestyle', 'Educational / Tutorials', 'Gaming / Commentary', 'Stories & Documentary', 'Shorts Only'].map((style) => (
+                      <button
+                        key={style}
+                        onClick={() => updateField('contentStyle', style)}
+                        className={`p-4 rounded-xl border text-right transition-all hover:scale-[1.02] ${formData.contentStyle === style
+                          ? 'border-[#F39C12] bg-[#F39C12]/10 text-white shadow-lg shadow-orange-500/10'
+                          : 'border-[#272727] hover:border-[#F39C12]/50 text-gray-400'
+                          }`}
+                      >
+                        {style}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
+            )}
 
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-400 mb-3">ما هو العائق الرئيسي للانتظام؟</label>
-                <select 
-                  className="w-full bg-[#272727] text-white rounded-lg p-3 border-none focus:ring-2 focus:ring-[#FF0000]"
-                  value={formData.consistencyBlocker || ''}
-                  onChange={(e) => updateField('consistencyBlocker', e.target.value)}
-                >
-                  <option value="">اختر...</option>
-                  <option value="no_time">ما عندي وقت كافي ⏰</option>
-                  <option value="editing">المونتاج ياخذ وقت طويل 🎬</option>
-                  <option value="ideas">ما ألاقي أفكار 💡</option>
-                  <option value="motivation">فقدان الشغف/الحماس 😔</option>
-                </select>
+            {/* Step 2: Experience - The Reality Check */}
+            {step === 2 && (
+              <div className="space-y-8 animate-fade-in">
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-bold text-white">وين إنت هسا في عالم اليوتيوب؟ 🚀</h2>
+                  <p className="text-gray-400">عشان نعطيك نصائح تناسب مرحلتك الحالية.</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 mt-8">
+                  {[
+                    { val: 'Beginner', icon: '🌱', title: 'مبتدئ (Beginner)', desc: 'لسه ببلش، بدي أتعلم الأساسيات وكيف أجيب أول 1000 مشترك.' },
+                    { val: 'Intermediate', icon: '📈', title: 'متوسط (Intermediate)', desc: 'عندي قناة وفيها حركة، بس بدي أكبر أسرع وأحسن الأرقام.' },
+                    { val: 'Pro', icon: '👑', title: 'محترف (Pro)', desc: 'عندي جمهور كبير، بدور على استراتيجيات متقدمة وتنويع دخل.' }
+                  ].map((lvl) => (
+                    <button
+                      key={lvl.val}
+                      onClick={() => updateField('creatorLevel', lvl.val)}
+                      className={`p-6 rounded-2xl border text-right transition-all group relative overflow-hidden ${formData.creatorLevel === lvl.val
+                        ? 'border-[#FF0000] bg-[#FF0000]/5 text-white'
+                        : 'border-[#272727] hover:border-gray-500 text-gray-300'
+                        }`}
+                    >
+                      <div className="flex items-start gap-4 relative z-10">
+                        <span className="text-4xl bg-[#0F0F0F] p-3 rounded-full border border-white/5">{lvl.icon}</span>
+                        <div>
+                          <div className="font-bold text-lg mb-1">{lvl.title}</div>
+                          <div className="text-sm opacity-70 group-hover:opacity-100 transition-opacity">{lvl.desc}</div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Step 2: Goals */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold mb-6 text-white">أهدافك ووقتك</h2>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-3">كم ساعة تقدر تخصص لليوتيوب أسبوعياً؟</label>
-                <div className="flex items-center gap-4">
-                  <input 
-                    type="range" 
-                    min="1" max="40" 
+            {/* Step 3: Goals & Constraints - The Plan */}
+            {step === 3 && (
+              <div className="space-y-8 animate-fade-in">
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-bold text-white">إيش هدفك الكبير؟ 🎯</h2>
+                  <p className="text-gray-400">خلينا نحدد بوصلتنا عشان نوصل أسرع.</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {[
+                    "دخل مادي (Business & Money) 💰",
+                    "شهرة وتأثير (Fame & Influence) ✨",
+                    "بناء مجتمع (Community Building) 🤝",
+                    "توثيق رحلة (Personal Archive) 📔"
+                  ].map((goal) => (
+                    <button
+                      key={goal}
+                      onClick={() => updateField('primaryGoal', goal)}
+                      className={`p-4 rounded-xl border text-right transition-all ${formData.primaryGoal === goal
+                        ? 'border-[#F39C12] bg-[#F39C12]/10 text-white'
+                        : 'border-[#272727] hover:border-[#F39C12]/50 text-gray-300'
+                        }`}
+                    >
+                      {goal}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="bg-[#272727]/30 p-6 rounded-2xl border border-white/5 mt-6">
+                  <label className="block text-sm font-medium text-gray-300 mb-4">
+                    قد ايه وقت مستعد تعطي القناة أسبوعياً؟ <span className="text-[#F39C12] font-bold">{formData.weeklyHours} ساعات</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="1" max="40"
                     value={formData.weeklyHours || 5}
                     onChange={(e) => updateField('weeklyHours', parseInt(e.target.value))}
-                    className="w-full h-2 bg-[#272727] rounded-lg appearance-none cursor-pointer accent-[#FF0000]"
+                    className="w-full h-2 bg-[#0F0F0F] rounded-lg appearance-none cursor-pointer accent-[#FF0000]"
                   />
-                  <span className="bg-[#FF0000] px-3 py-1 rounded-lg font-bold min-w-[3rem] text-center">
-                    {formData.weeklyHours}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                <label className="block text-sm font-medium text-gray-400">الهدف الرئيسي</label>
-                {[
-                  "أوصل 1000 مشترك (الربح) 💰",
-                  "بناء جمهور متفاعل 💬",
-                  "التسويق لخدماتي/عملي 🏪"
-                ].map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => updateField('primaryGoal', opt)}
-                    className={`p-4 rounded-xl border text-right transition-all ${
-                      formData.primaryGoal === opt 
-                      ? 'border-[#F39C12] bg-[#F39C12]/10 text-white' 
-                      : 'border-[#272727] hover:border-[#F39C12]/50 text-gray-300'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Connect */}
-          {step === 3 && (
-            <div className="space-y-6">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">اربط أدوات التحليل</h2>
-                <p className="text-gray-400 text-sm">نحتاج مفاتيح الربط لتحليل القناة واستخدام الذكاء الاصطناعي.</p>
-              </div>
-
-              <div className="space-y-4">
-                {/* Channel ID */}
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Channel ID</label>
-                  <input 
-                    type="text" 
-                    placeholder="UC..."
-                    className="w-full bg-[#0F0F0F] border border-[#272727] rounded-lg p-3 text-white focus:border-[#FF0000] focus:outline-none"
-                    value={formData.channelId || ''}
-                    onChange={(e) => updateField('channelId', e.target.value)}
-                  />
-                </div>
-
-                {/* YouTube API Key */}
-                <div className="bg-[#272727]/30 p-4 rounded-xl border border-white/5">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="flex items-center gap-2 text-sm text-white font-bold">
-                       <Youtube size={16} className="text-red-500"/>
-                       YouTube API Key
-                    </label>
-                    <a 
-                      href="https://console.cloud.google.com/apis/credentials" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[10px] text-[#F39C12] hover:underline"
-                    >
-                      الحصول على المفتاح
-                    </a>
+                  <div className="flex justify-between text-xs text-gray-500 mt-2">
+                    <span>هواية (1 ساعة)</span>
+                    <span>دوام جزئي (20 ساعة)</span>
+                    <span>دوام كامل (40 ساعة)</span>
                   </div>
-                  <input 
-                    type="password" 
-                    placeholder="لجلب بيانات القناة..."
-                    className="w-full bg-[#0F0F0F] border border-[#272727] rounded-lg p-3 text-white focus:border-[#FF0000] focus:outline-none"
-                    value={formData.youtubeApiKey || ''}
-                    onChange={(e) => updateField('youtubeApiKey', e.target.value)}
-                  />
                 </div>
-
-                {/* Gemini API Key */}
-                <div className="bg-[#272727]/30 p-4 rounded-xl border border-white/5">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="flex items-center gap-2 text-sm text-white font-bold">
-                       <Sparkles size={16} className="text-blue-400"/>
-                       Gemini API Key
-                    </label>
-                    <span className="text-[10px] text-green-500 font-bold">
-                      تم الربط تلقائياً ✅
-                    </span>
-                  </div>
-                  <input 
-                    type="password" 
-                    placeholder="للتحليل الذكي واقتراح الأفكار..."
-                    className="w-full bg-[#0F0F0F] border border-[#272727] rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none"
-                    value={formData.geminiApiKey || ''}
-                    onChange={(e) => updateField('geminiApiKey', e.target.value)}
-                  />
-                  <p className="text-[10px] text-gray-500 mt-1">لقد قمت بإدخال المفتاح الذي زودتني به مسبقاً.</p>
-                </div>
-
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Step 4: Unleash AI - Connection */}
+            {step === 4 && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-white mb-2">أطلق العنان لمحللك الذكي 🧠</h2>
+                  <p className="text-gray-400">اربط قناتك عشان الـ AI يقدر يقرأ بياناتك ويعطيك النصائح السحرية.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-orange-600 rounded-xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <div className="bg-[#0F0F0F] relative border border-[#272727] rounded-xl p-6 transition-colors group-hover:border-red-500/50">
+                      <label className="block text-sm font-bold text-white mb-2 flex items-center gap-2">
+                        <Youtube className="text-red-500" /> رابط القناة (Channel ID)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="UC..."
+                        className="w-full bg-[#1A1A1A] border-none rounded-lg p-3 text-white focus:ring-2 focus:ring-[#FF0000] placeholder:text-gray-600"
+                        value={formData.channelId || ''}
+                        onChange={(e) => updateField('channelId', e.target.value)}
+                      />
+                      <p className="text-xs text-gray-500 mt-2">يمكنك إيجاده في إعدادات القناة المتقدمة في يوتيوب.</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0F0F0F] border border-[#272727] rounded-xl p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-sm font-bold text-white flex items-center gap-2">
+                        <span className="bg-[#272727] p-1 rounded">API Keys</span> مفاتيح الربط
+                      </label>
+                      <a href="#" className="text-xs text-[#F39C12] hover:underline">ما عندك مفاتيح؟ اضغط هنا</a>
+                    </div>
+
+                    <div className="space-y-3">
+                      <input
+                        type="password"
+                        placeholder="YouTube Data API Key"
+                        className="w-full bg-[#1A1A1A] border border-[#272727] rounded-lg p-3 text-white focus:border-[#FF0000] outline-none transition-colors"
+                        value={formData.youtubeApiKey || ''}
+                        onChange={(e) => updateField('youtubeApiKey', e.target.value)}
+                      />
+                      <div className="relative">
+                        <input
+                          type="password"
+                          placeholder="Gemini API Key"
+                          className="w-full bg-[#1A1A1A] border border-blue-900/30 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-colors pr-10"
+                          value={formData.geminiApiKey || ''}
+                          onChange={(e) => updateField('geminiApiKey', e.target.value)}
+                        />
+                        <Sparkles size={16} className="absolute top-3.5 right-3 text-blue-500" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-white/5 relative z-10">
+          <div className="flex justify-between mt-8 pt-6 border-t border-white/5 relative z-10 items-center">
             {step > 1 ? (
-              <button 
+              <button
                 onClick={handleBack}
-                className="flex items-center gap-2 text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                className="text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-colors text-sm"
               >
-                <ArrowRight size={18} />
-                سابق
+                رجوع
               </button>
             ) : <div></div>}
 
-            {step < 3 ? (
-              <button 
+            <div className="flex gap-2">
+              {steps.map(s => (
+                <div key={s.id} className={`h-1.5 rounded-full transition-all duration-300 ${s.id === step ? 'w-8 bg-white' : 'w-1.5 bg-[#272727]'}`}></div>
+              ))}
+            </div>
+
+            {step < 4 ? (
+              <button
                 onClick={handleNext}
                 disabled={!isStepValid()}
-                className={`flex items-center gap-2 px-6 py-2 rounded-lg font-bold transition-all shadow-lg ${
-                  isStepValid()
-                    ? 'bg-[#FF0000] hover:bg-[#CC0000] text-white shadow-[#FF0000]/20'
-                    : 'bg-[#272727] text-gray-500 cursor-not-allowed shadow-none'
-                }`}
+                className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all ${isStepValid()
+                  ? 'bg-white text-black hover:bg-gray-200'
+                  : 'bg-[#272727] text-gray-500 cursor-not-allowed'
+                  }`}
               >
                 التالي
                 <ArrowLeft size={18} />
               </button>
             ) : (
-              <button 
+              <button
                 onClick={handleSubmit}
                 disabled={!formData.channelId || !formData.youtubeApiKey || !formData.geminiApiKey}
-                className="flex items-center gap-2 bg-gradient-to-r from-[#FF0000] to-[#CC0000] text-white px-8 py-3 rounded-lg font-bold transition-all shadow-lg shadow-[#FF0000]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-gradient-to-r from-[#FF0000] to-[#CC0000] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#FF0000]/20 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                ابدا التحليل
-                <PlayCircle size={18} />
+                يلا نبدأ 🚀
               </button>
             )}
           </div>
