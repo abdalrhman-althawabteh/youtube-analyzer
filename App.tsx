@@ -5,6 +5,7 @@ import LandingPage from './components/LandingPage';
 import Auth from './components/Auth';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
+import AdminDashboard from './components/AdminDashboard';
 import { fetchChannelData } from './services/youtubeService';
 import { generateAudit } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
@@ -25,20 +26,43 @@ const App: React.FC = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_data')
+        .select('onboarding_data, role')
         .eq('id', session.user.id)
         .single();
 
-      if (profile?.onboarding_data) {
-        const { onboarding, channel, analysis: savedAnalysis } = profile.onboarding_data;
-        if (onboarding && channel && savedAnalysis) {
-          setUserData(onboarding);
-          setChannelData(channel);
-          setAnalysis(savedAnalysis);
-          navigate('/dashboard');
+      if (profile) {
+        // Admin Access Check
+        if (window.location.pathname === '/admin') {
+          if (profile.role === 'admin') {
+            setIsLoading(false);
+            return; // Allow stay on /admin
+          } else {
+            navigate('/dashboard');
+            return;
+          }
+        } else if (profile.role === 'admin' && window.location.pathname === '/login') {
+          navigate('/admin');
+          return;
+        }
+
+        if (profile.onboarding_data) {
+          const { onboarding, channel, analysis: savedAnalysis } = profile.onboarding_data;
+          if (onboarding && channel && savedAnalysis) {
+            setUserData(onboarding);
+            setChannelData(channel);
+            setAnalysis(savedAnalysis);
+            // If trying to access admin and allowed, it's handled above. 
+            // Otherwise go to dashboard if not already there.
+            if (window.location.pathname !== '/admin') {
+              navigate('/dashboard');
+            }
+          } else {
+            navigate('/onboarding');
+          }
         } else {
-          // User logged in but no data yet (maybe stopped at onboarding)
-          navigate('/onboarding');
+          // New admin without data? or just user.
+          if (profile.role === 'admin') navigate('/admin');
+          else navigate('/onboarding');
         }
       } else {
         navigate('/onboarding');
@@ -108,6 +132,7 @@ const App: React.FC = () => {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Auth />} />
+      <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/onboarding" element={<Onboarding onComplete={handleOnboardingComplete} />} />
       <Route
         path="/dashboard"
