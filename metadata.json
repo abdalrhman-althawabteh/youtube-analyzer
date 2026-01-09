@@ -1,0 +1,5 @@
+{
+  "name": "RedAudit AI - YouTube Analyst",
+  "description": "An AI-powered YouTube channel audit tool specializing in personalized growth strategies using Gemini and YouTube Data API.",
+  "requestFramePermissions": []
+}
